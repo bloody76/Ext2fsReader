@@ -141,7 +141,7 @@ typedef struct
   // Length of file name.
   ushort  name_len;
   // The file name.
-  char*   name;
+  char    name[0];
 }         s_directory;
 
 
@@ -194,5 +194,9 @@ s_group_descriptor *get_group_descriptor(void           *fs,
 s_inode *get_inode (void          *fs,
                     s_super_block *blk,
                     uint          inode);
+
+s_directory *get_dirs (void           *fs,
+                       s_super_block  *blk,
+                       uint           inode);
 
 #endif /* !EXT2_H_ */

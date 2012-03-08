@@ -25,3 +25,13 @@ s_inode *get_inode (void          *fs,
       + gd->inode_table * BLOCK_SIZE(blk->log_block_size)
       + index * inodes_size));
 }
+
+s_directory *get_dirs (void           *fs,
+                       s_super_block  *blk,
+                       uint           inode)
+{
+  s_inode *i = get_inode (fs, blk, inode);
+
+  return (s_directory*)((char*)fs
+        + i->block[0] * 1024);
+}

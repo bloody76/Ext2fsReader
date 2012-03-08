@@ -11,7 +11,7 @@ int main (int argc, char **argv)
   struct stat         buf;
   void                *fs = 0;
   s_super_block       *super_block = 0;
-  s_directory         *root_inode = 0;
+  s_inode             *root_inode = 0;
 
 
   if (argc < 2)
@@ -29,7 +29,8 @@ int main (int argc, char **argv)
   if (super_block->magic != MAGIC_SUPER_BLOCK)
     return 3;
 
-  root_inode = (s_directory*)get_inode (fs, super_block, EXT2_ROOT_INO);
+  root_inode = get_inode (fs, super_block, EXT2_ROOT_INO);
+  s_directory *dir = get_dirs (fs, super_block, EXT2_ROOT_INO);
 
   munmap (fs, buf.st_size);
 
