@@ -1,4 +1,4 @@
-A little reader of ext2fs.
+A little reader of ext2fs for GNU/Linux.
 
 First create the image thank's to bximage:
 
