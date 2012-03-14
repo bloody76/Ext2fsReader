@@ -1,1 +1,28 @@
 A little reader of ext2fs.
+
+First create the image thank's to bximage:
+
+  $ bximage
+  > hd
+  > flat
+  > 2
+  > c.img
+
+Create the ext2fs:
+
+  $ mke2fs c.img
+  > y
+
+If you want to see some caracteristics:
+
+  $ dumpe2fs c.img
+
+So as to mount the image:
+
+  $ mount -o loop -t ext2 c.img /mnt/loop
+
+If you want to use Ext2fsReader on your image:
+
+  $ ./Ext2fsReader c.img
+
+Then type "help" when Ext2fsReader is launch so as to see the commands.

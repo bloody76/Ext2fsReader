@@ -1,37 +1,32 @@
 #include "ext2.h"
 
-s_group_descriptor *get_group_descriptor(void           *fs,
-                                         s_super_block  *blk,
+s_group_descriptor *get_group_descriptor(s_disk         *disk,
                                          uint           inode)
 {
-  return (void*)((char*)fs
+  return (void*)((char*)disk->fs
       + OFFSET_SUPER_BLOCK
       + sizeof (s_super_block)
-      + (inode - 1) / blk->inodes_per_group);
+      + (inode - 1) / disk->sblk->inodes_per_group);
 }
 
-s_inode *get_inode (void          *fs,
-                    s_super_block *blk,
+s_inode *get_inode (s_disk        *disk,
                     uint          inode)
 {
   s_group_descriptor  *gd = 0;
   int                 index = 0;
   int                 inodes_size = 128;
 
-  gd = get_group_descriptor (fs, blk, inode);
-  index = (inode - 1) % blk->inodes_per_group;
+  gd = get_group_descriptor (disk, inode);
+  index = (inode - 1) % disk->sblk->inodes_per_group;
 
-  return ((void*)((char*)fs
-      + gd->inode_table * BLOCK_SIZE(blk->log_block_size)
-      + index * inodes_size));
+  return (void*)((char*)get_block (disk, gd->inode_table)
+      + index * inodes_size);
 }
 
-s_directory *get_dirs (void           *fs,
-                       s_super_block  *blk,
+s_directory *get_dirs (s_disk         *disk,
                        uint           inode)
 {
-  s_inode *i = get_inode (fs, blk, inode);
+  s_inode *i = get_inode (disk, inode);
 
-  return (s_directory*)((char*)fs
-        + i->block[0] * 1024);
+  return (s_directory*)get_block (disk, i->block[0]);
 }

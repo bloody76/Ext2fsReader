@@ -144,6 +144,12 @@ typedef struct
   char    name[0];
 }         s_directory;
 
+typedef struct
+{
+  void          *fs;
+  s_super_block *sblk;
+  uint          block_size;
+}               s_disk;
 
 enum e_file_mode
 {
@@ -187,16 +193,20 @@ enum e_special_inodes
   EXT2_FIRST_INO        = 11,// First non reserved inode.
 };
 
-s_group_descriptor *get_group_descriptor(void           *fs,
-                                         s_super_block  *blk,
+
+void init_disk (s_disk  *disk,
+                void    *fs);
+
+void  *get_block (const s_disk *disk,
+                  const uint   pointer);
+
+s_group_descriptor *get_group_descriptor(s_disk         *disk,
                                          uint           inode);
 
-s_inode *get_inode (void          *fs,
-                    s_super_block *blk,
+s_inode *get_inode (s_disk        *disk,
                     uint          inode);
 
-s_directory *get_dirs (void           *fs,
-                       s_super_block  *blk,
+s_directory *get_dirs (s_disk         *disk,
                        uint           inode);
 
 #endif /* !EXT2_H_ */
