@@ -206,7 +206,8 @@ s_group_descriptor *get_group_descriptor(s_disk         *disk,
 s_inode *get_inode (s_disk        *disk,
                     uint          inode);
 
-s_directory *get_dirs (s_disk         *disk,
-                       uint           inode);
+s_directory *get_dir (s_disk         *disk,
+                      uint           inode,
+                      uint           block);
 
 #endif /* !EXT2_H_ */

@@ -23,10 +23,11 @@ s_inode *get_inode (s_disk        *disk,
       + index * inodes_size);
 }
 
-s_directory *get_dirs (s_disk         *disk,
-                       uint           inode)
+s_directory *get_dir (s_disk         *disk,
+                      uint           inode,
+                      uint           block)
 {
   s_inode *i = get_inode (disk, inode);
 
-  return (s_directory*)get_block (disk, i->block[0]);
+  return (s_directory*)get_block (disk, i->block[block]);
 }
