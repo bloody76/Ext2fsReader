@@ -64,7 +64,7 @@ typedef struct
   ushort grp_id;
   // Padding to 1024 bytes.
   uint   reserved[235];
-}        s_super_block;
+}__attribute__((packed)) s_super_block;
 
 typedef struct
 {
@@ -84,7 +84,7 @@ typedef struct
   ushort pad;
   // Padding;
   uint   reserved[3];
-}        s_group_descriptor;
+}__attribute__((packed)) s_group_descriptor;
 
 typedef struct
 {
@@ -130,7 +130,7 @@ typedef struct
   ushort pad1;
   // Padding.
   uint   reserved2[2];
-}        s_inode;
+}__attribute__ ((packed)) s_inode;
 
 typedef struct
 {
@@ -142,7 +142,7 @@ typedef struct
   ushort  name_len;
   // The file name.
   char    name[0];
-}         s_directory;
+}__attribute__ ((packed)) s_directory;
 
 typedef struct
 {
@@ -199,6 +199,9 @@ void init_disk (s_disk  *disk,
 
 void  *get_block (const s_disk *disk,
                   const uint   pointer);
+
+void print_file (s_disk *disk,
+                 uint   inode);
 
 s_group_descriptor *get_group_descriptor(s_disk         *disk,
                                          uint           inode);

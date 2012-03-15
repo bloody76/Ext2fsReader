@@ -17,6 +17,7 @@ static const s_command commands[MAX_FUNCS] =
   {"ls", "List all the files and directories of the actual directory.", &ls},
   {"linode", "Display the informations of the inode specified.", &linode},
   {"cd", "Change of directory.", &cd},
+  {"cat", "Print the file to the ouput.", &cat},
 };
 
 int help (s_disk *disk,
@@ -82,8 +83,11 @@ int ls (s_disk *disk,
 {
   s_directory *dir = NULL;
   s_inode     *tmp = NULL;
+  int         *p = NULL;
+  int         *pp = NULL;
+  int         *ppp = NULL;
 
-  for (int i = 0; i < 12 && g_tty.curr_dir->block[i] != 0; i++)
+  for (int i = 0; i < 12 && g_tty.curr_dir->block[i]; i++)
   {
     dir = get_dir (disk, g_tty.curr_inode, i);
     while (dir && dir->name_len
@@ -99,20 +103,207 @@ int ls (s_disk *disk,
       dir = (void*)((char*)dir + dir->rec_len);
     }
   }
+
+  if (g_tty.curr_dir->block[12] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[12]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      dir = get_block (disk, p[i]);
+      while (dir && dir->name_len
+          && !(!strcmp (dir->name, ".") && dir->inode != g_tty.curr_inode))
+      {
+        tmp = get_inode (disk, dir->inode);
+
+        print_mode (tmp->mode);
+        printf ("%u ", tmp->mode);
+        printf ("%5.u ", tmp->size);
+        printf ("%3.u ", dir->inode);
+        printf ("%.*s\n", (char)dir->name_len, dir->name);
+        dir = (void*)((char*)dir + dir->rec_len);
+      }
+    }
+  }
+  if (g_tty.curr_dir->block[13] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[13]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      pp = get_block (disk, p[i]);
+      for (int j = 0; j < disk->block_size / 4 && pp[j]; j++)
+      {
+        dir = get_block (disk, pp[j]);
+        while (dir && dir->name_len
+            && !(!strcmp (dir->name, ".") && dir->inode != g_tty.curr_inode))
+        {
+          tmp = get_inode (disk, dir->inode);
+
+          print_mode (tmp->mode);
+          printf ("%u ", tmp->mode);
+          printf ("%5.u ", tmp->size);
+          printf ("%3.u ", dir->inode);
+          printf ("%.*s\n", (char)dir->name_len, dir->name);
+          dir = (void*)((char*)dir + dir->rec_len);
+        }
+      }
+    }
+  }
+
+  if (g_tty.curr_dir->block[14] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[14]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      pp = get_block (disk, p[i]);
+      for (int j = 0; j < disk->block_size / 4 && pp[j]; j++)
+      {
+        ppp = get_block (disk, pp[i]);
+        for (int k = 0; k < disk->block_size / 4 && ppp[k]; k++)
+        {
+          dir = get_block (disk, ppp[k]);
+          while (dir && dir->name_len
+              && !(!strcmp (dir->name, ".") && dir->inode != g_tty.curr_inode))
+          {
+            tmp = get_inode (disk, dir->inode);
+
+            print_mode (tmp->mode);
+            printf ("%u ", tmp->mode);
+            printf ("%5.u ", tmp->size);
+            printf ("%3.u ", dir->inode);
+            printf ("%.*s\n", (char)dir->name_len, dir->name);
+            dir = (void*)((char*)dir + dir->rec_len);
+          }
+        }
+      }
+    }
+  }
+
   return 0;
 }
 
+int cat (s_disk  *disk,
+         int     argc,
+         char    *argv[5])
+{
+  s_directory *dir = NULL;
+  s_inode     *tmp = NULL;
+  int         *p = NULL;
+  int         *pp = NULL;
+  int         *ppp = NULL;
+
+  if (argc < 2)
+    return printf ("You must specify a file.\n");
+
+  for (int i = 0; i < 12 && g_tty.curr_dir->block[i]; i++)
+  {
+    dir = get_dir (disk, g_tty.curr_inode, i);
+    while (dir && !(!strcmp (dir->name, ".")
+          && dir->inode != g_tty.curr_inode))
+    {
+      tmp = get_inode (disk, dir->inode);
+
+      if (!strncmp (argv[1], dir->name, (char)dir->name_len)
+          && argv[1][(char)dir->name_len] == '\0')
+      {
+        print_file (disk, dir->inode);
+        return 0;
+      }
+      dir = (void*)((char*)dir + dir->rec_len);
+    }
+  }
+
+  if (g_tty.curr_dir->block[12] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[12]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      dir = get_block (disk, p[i]);
+      while (dir && !(!strcmp (dir->name, ".")
+            && dir->inode != g_tty.curr_inode))
+      {
+        tmp = get_inode (disk, dir->inode);
+
+        if (!strncmp (argv[1], dir->name, (char)dir->name_len)
+            && argv[1][(char)dir->name_len] == '\0')
+        {
+          print_file (disk, dir->inode);
+          return 0;
+        }
+        dir = (void*)((char*)dir + dir->rec_len);
+      }
+    }
+  }
+  if (g_tty.curr_dir->block[13] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[13]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      pp = get_block (disk, p[i]);
+      for (int j = 0; j < disk->block_size / 4 && pp[j]; j++)
+      {
+        dir = get_block (disk, pp[j]);
+        while (dir && !(!strcmp (dir->name, ".")
+              && dir->inode != g_tty.curr_inode))
+        {
+          tmp = get_inode (disk, dir->inode);
+
+          if (!strncmp (argv[1], dir->name, dir->name_len)
+              && argv[1][(char)dir->name_len] == '\0')
+          {
+            print_file (disk, dir->inode);
+            return 0;
+          }
+          dir = (void*)((char*)dir + dir->rec_len);
+        }
+      }
+    }
+  }
+
+  if (g_tty.curr_dir->block[14] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[14]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      pp = get_block (disk, p[i]);
+      for (int j = 0; j < disk->block_size / 4 && pp[j]; j++)
+      {
+        ppp = get_block (disk, pp[i]);
+        for (int k = 0; k < disk->block_size / 4 && ppp[k]; k++)
+        {
+          dir = get_block (disk, ppp[k]);
+          while (dir && !(!strcmp (dir->name, ".")
+                && dir->inode != g_tty.curr_inode))
+          {
+            tmp = get_inode (disk, dir->inode);
+
+            if (!strncmp (argv[1], dir->name, dir->name_len)
+                && argv[1][(char)dir->name_len] == '\0')
+            {
+              print_file (disk, dir->inode);
+              return 0;
+            }
+            dir = (void*)((char*)dir + dir->rec_len);
+          }
+        }
+      }
+    }
+  }
+  return 1;
+}
 int cd (s_disk  *disk,
         int     argc,
         char    *argv[5])
 {
   s_directory *dir = NULL;
   s_inode     *tmp = NULL;
+  int         *p = NULL;
+  int         *pp = NULL;
+  int         *ppp = NULL;
 
   if (argc < 2)
     return printf ("You must specify a directory.\n");
 
-  for (int i = 0; i < 12 && g_tty.curr_dir->block[i] != 0; i++)
+  for (int i = 0; i < 12 && g_tty.curr_dir->block[i]; i++)
   {
     dir = get_dir (disk, g_tty.curr_inode, i);
     while (dir && !(!strcmp (dir->name, ".")
@@ -132,12 +323,98 @@ int cd (s_disk  *disk,
       dir = (void*)((char*)dir + dir->rec_len);
     }
   }
+
+  if (g_tty.curr_dir->block[12] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[12]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      dir = get_block (disk, p[i]);
+      while (dir && !(!strcmp (dir->name, ".")
+            && dir->inode != g_tty.curr_inode))
+      {
+        tmp = get_inode (disk, dir->inode);
+
+        if (!strncmp (argv[1], dir->name, dir->name_len)
+            && argv[1][(char)dir->name_len] == '\0')
+        {
+          if (!(tmp->mode & S_IFDIR))
+            return printf ("%s is not a directory.\n", argv[1]);
+          g_tty.curr_inode = dir->inode;
+          g_tty.curr_dir = tmp;
+          return 0;
+        }
+        dir = (void*)((char*)dir + dir->rec_len);
+      }
+    }
+  }
+  if (g_tty.curr_dir->block[13] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[13]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      pp = get_block (disk, p[i]);
+      for (int j = 0; j < disk->block_size / 4 && pp[j]; j++)
+      {
+        dir = get_block (disk, pp[j]);
+        while (dir && !(!strcmp (dir->name, ".")
+              && dir->inode != g_tty.curr_inode))
+        {
+          tmp = get_inode (disk, dir->inode);
+
+          if (!strncmp (argv[1], dir->name, dir->name_len)
+              && argv[1][(char)dir->name_len] == '\0')
+          {
+            if (!(tmp->mode & S_IFDIR))
+              return printf ("%s is not a directory.\n", argv[1]);
+            g_tty.curr_inode = dir->inode;
+            g_tty.curr_dir = tmp;
+            return 0;
+          }
+          dir = (void*)((char*)dir + dir->rec_len);
+        }
+      }
+    }
+  }
+
+  if (g_tty.curr_dir->block[14] != 0)
+  {
+    p = get_block (disk, g_tty.curr_dir->block[14]);
+    for (int i = 0; i < disk->block_size / 4 && p[i]; i++)
+    {
+      pp = get_block (disk, p[i]);
+      for (int j = 0; j < disk->block_size / 4 && pp[j]; j++)
+      {
+        ppp = get_block (disk, pp[i]);
+        for (int k = 0; k < disk->block_size / 4 && ppp[k]; k++)
+        {
+          dir = get_block (disk, ppp[k]);
+          while (dir && !(!strcmp (dir->name, ".")
+                && dir->inode != g_tty.curr_inode))
+          {
+            tmp = get_inode (disk, dir->inode);
+
+            if (!strncmp (argv[1], dir->name, dir->name_len)
+                && argv[1][(char)dir->name_len] == '\0')
+            {
+              if (!(tmp->mode & S_IFDIR))
+                return printf ("%s is not a directory.\n", argv[1]);
+              g_tty.curr_inode = dir->inode;
+              g_tty.curr_dir = tmp;
+              return 0;
+            }
+            dir = (void*)((char*)dir + dir->rec_len);
+          }
+        }
+      }
+    }
+  }
   return 1;
 }
 
 int linode (s_disk  *disk,
-    int     argc,
-    char    *argv[5])
+            int     argc,
+            char    *argv[5])
 {
   char*   arg = NULL;
   s_inode *inode = NULL;
